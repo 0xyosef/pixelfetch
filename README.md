@@ -30,6 +30,9 @@ cargo run -q -- -d
 cargo run -q -- [path image]
 ``
 
+# TO-DO
+    - [ ] Refactor code
+
 > If you get here, don't forget the star yooo ⭐
 
 # Note
