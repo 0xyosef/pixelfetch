@@ -431,9 +431,7 @@ name = "pixelfetch"
 version = "0.1.0"
 dependencies = [
  "chafa",
- "chafa-sys",
  "image",
- "terminal_size",
 ]
 
 [[package]]

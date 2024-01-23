@@ -1,81 +1,64 @@
 #![allow(unused_parens)]
 #![allow(non_snake_case)]
-
-
-#![allow(unused_parens)]
-#![allow(non_snake_case)]
-
 mod modules;
-use modules::fetch::popen;
-use modules::fetch::get_env_variable;
-static DESCRIPTION_LEN:usize = 13;
 
-use std::env;
+use crate::modules::fetch::{
+    display_default, display_image_with_info, get_env_variable, run_command,
+};
 use std::process::exit;
-
+use std::{env, fs};
 
 fn main() {
-
-    let _Arg1 = env::args().nth(1).unwrap();
-    let Arg1 = _Arg1.as_str();
-
-    if Arg1 == "-help" || Arg1 == "--help" {
+    // Information
+    let args = env::args().nth(1).unwrap();
+    let Arg1 = args.as_str();
+    if Arg1 == "-help" || Arg1 == "--help" || Arg1 == "-h" {
         println!(
-            r#"Usage: ./xfcfet <path to a picture>
+            r#"Usage: ./pixelfetch <path to a picture> or -d to default
     Examples:
-        ./xfcfet ~/Pictures/face.png
-        ./xfcfet Pictures/meet.jpg
-        ./xfcfet ./pic.png
+            ./pixelfetch ~/Pictures/face.png
+            ./pixelfetch Pictures/meet.jpg
+            ./pixelfetch ./pic.png
+            ./pixelfetch -d
     #these are all valid examples.
-
-    Requiremts:
-        chafa   ->   /usr/bin/chafa"#
+        "#
         );
         exit(1);
-    };
-    let _banner: String = popen("chafa", &[Arg1, "-s", "30"]);
-
-    let banner = _banner.split("\n").collect::<Vec<&str>>();
-
-    // removing 'Description: ' from lsb_release output
-    let mut Distro = popen("lsb_release", &["-d"]);
-    for _i in 0..DESCRIPTION_LEN {
-        Distro.remove(0);
     }
 
-    // Information
+    let distro = run_command("uname", &["-n"]);
     let mut user_name = format!(
-        "  \x1b[38;5;2mName \x1b[38;5;3m➔ \x1b[0m{}",
-        popen("whoami", &[])
+        "  \x1b[38;5;2musername \x1b[38;5;3m➔ \x1b[0m{}",
+        run_command("whoami", &[])
     );
-    let user_wm = format!(
+    let session = format!(
         "  \x1b[38;5;2mWM \x1b[38;5;3m➔ \x1b[0m{}",
-        get_env_variable("GDMSESSION")
+        get_env_variable("DESKTOP_SESSION")
     );
     let mut user_uptime = format!(
         "  \x1b[38;5;2mUptime \x1b[38;5;3m➔ \x1b[0m{}",
-        popen("uptime", &["-p"])
+        run_command("uptime", &["-p"])
     );
-    let mut user_distro = format!("  \x1b[38;5;2mDistro \x1b[38;5;3m➔ \x1b[0m{}", Distro);
+    let mut user_distro = format!("  \x1b[38;5;2mDistro \x1b[38;5;3m➔ \x1b[0m{}", distro);
     let user_term = format!(
         "  \x1b[38;5;2mTerm \x1b[38;5;3m➔ \x1b[0m{}",
         get_env_variable("TERM")
     );
     let user_shell = format!(
-        "  \x1b[38;5;2mShell \x1b[38;5;3m➔ \x1b[0m{}", env::var("SHELL").unwrap()
+        "  \x1b[38;5;2mShell \x1b[38;5;3m➔ \x1b[0m{}",
+        env::var("SHELL").unwrap()
     );
-    let seperator = "  \x1b[38;5;1m======================".to_string();
     let mut song_artist = format!(
         "  \x1b[38;5;2mArtist \x1b[38;5;3m➔\x1b[0m {}",
-        popen("playerctl", &["-p", "spotify", "metadata", "artist"])
+        run_command("playerctl", &["-p", "spotify", "metadata", "artist"])
     );
     let mut song_album = format!(
         "  \x1b[38;5;2mAlbum \x1b[38;5;3m➔\x1b[0m {}",
-        popen("playerctl", &["-p", "spotify", "metadata", "album"])
+        run_command("playerctl", &["-p", "spotify", "metadata", "album"])
     );
     let mut song_name = format!(
         "  \x1b[38;5;2mSong \x1b[38;5;3m➔\x1b[0m {}",
-        popen("playerctl", &["-p", "spotify", "metadata", "title"])
+        run_command("playerctl", &["-p", "spotify", "metadata", "title"])
     );
 
     // popping '\n' character
@@ -90,29 +73,19 @@ fn main() {
     let info = [
         user_distro,
         user_name,
-        user_wm,
+        session,
         user_uptime,
         user_shell,
         user_term,
-        seperator,
         song_artist,
         song_album,
         song_name,
     ];
-
-    // Printing everything to the screen
-    let mut i = 0;
-    let mut InfoLine: &str;
-    for line in &banner {
-        if (info.len() <= i) {
-            InfoLine = "";
-        } else {
-            InfoLine = &info[i];
-        };
-        if (i == banner.len() - 1) {
-            break;
-        };
-        println!("{} {}", line, InfoLine);
-        i += 1;
+    if Arg1 == "-d" {
+        let banner = fs::read_to_string("./demo").expect("Should have been able to read the file");
+        display_default(banner, &info);
+    } else {
+        let img = image::open(Arg1).expect("failed to open image");
+        display_image_with_info(&img, &info);
     }
 }

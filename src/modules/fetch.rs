@@ -3,7 +3,7 @@ use std::process::Command;
 use ::chafa::ChafaCanvas;
 use image::DynamicImage;
 const SRC_WIDTH: u32 =40;
-const SRC_HEIGHT: u32 =40;
+const SRC_HEIGHT: u32 =30;
 
 
 
@@ -20,7 +20,7 @@ pub fn run_command(command: &str, args: &[&str]) -> String {
 pub fn get_env_variable(var: &str) -> String {
     env::var(var).unwrap_or_else(|_| "Unknown".to_string())
 }
-// lib/display.rs
+// modules/display.rs
 
 pub fn display_image_with_info(img: &DynamicImage, info: &[String; 9]) {
     let _banner = create_chafa(img);
@@ -29,7 +29,7 @@ pub fn display_image_with_info(img: &DynamicImage, info: &[String; 9]) {
 
     // Printing everything to the screen
     let mut info_iter = info.iter();
-    for line in banner.iter().take(info.len()) {
+    for line in banner.iter() {
         if let Some(info_line) = info_iter.next() {
             println!("{} {}", line, info_line);
         } else {
@@ -44,7 +44,7 @@ pub fn display_image_with_info(img: &DynamicImage, info: &[String; 9]) {
 pub fn display_default(banner:String,info: &[String; 9]){
     let split_banner= banner.split("\n").collect::<Vec<_>>();
     let mut info_iter = info.iter();
-    for line in split_banner.iter().take(info.len()) {
+    for line in split_banner.iter() {
         if let Some(info_line) = info_iter.next() {
             println!("{}{}", line, info_line);
         } else {
